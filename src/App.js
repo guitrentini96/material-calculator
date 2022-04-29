@@ -1,5 +1,4 @@
-import { Box, Button, Grid, Paper, Stack, Typography } from '@mui/material';
-import { toBePartiallyChecked } from '@testing-library/jest-dom/dist/matchers';
+import { Button, Grid, Paper, Stack, Typography } from '@mui/material';
 import React from 'react';
 import './App.css';
 import GeneralContainer from './components/GeneralContainer';
@@ -7,7 +6,7 @@ import GeneralContainer from './components/GeneralContainer';
 function App() {
   const [state, setState] = React.useState({
     symbols: [
-      '$',
+      '🐱',
       'RESET',
       '+/-',
       7,
@@ -33,6 +32,9 @@ function App() {
     currentNumber: '',
     placeholderCurrentNumber: '',
     hasDot: false,
+    result: '',
+    pallete: ['primary', 'secondary', 'success', 'error', 'info', 'warning'],
+    catButtonColor: 'error',
   });
 
   const handleEquals = () => {
@@ -79,10 +81,13 @@ function App() {
       );
     }
 
-    let resultToDisplay = result.toString();
+    let resultString = result.toString();
+    let resultToDisplay = resultString;
 
-    if (resultToDisplay.length > 15) {
-      resultToDisplay = '...'.concat(resultToDisplay.slice(-16, -1));
+    if (resultString.includes('.') && resultString.split('.')[1].length > 4) {
+      resultToDisplay = result.toFixed(4);
+    } else if (resultToDisplay.length > 17) {
+      resultToDisplay = '...'.concat(resultToDisplay.slice(-18, -1));
     }
 
     setState({
@@ -91,10 +96,19 @@ function App() {
       currentNumber: '',
       placeholderMemory: memoryToDisplay,
       placeholderCurrentNumber: resultToDisplay,
+      result: resultString,
       hasDot: false,
     });
 
     console.log(`result: ${result}`);
+  };
+
+  const randomizeCatButtonColor = () => {
+    const newIndex = Math.floor(Math.random() * 6);
+    setState({
+      ...state,
+      catButtonColor: state.pallete[newIndex],
+    });
   };
 
   const handleClick = (event) => {
@@ -154,43 +168,69 @@ function App() {
         currentNumber: '',
         placeholderCurrentNumber: '',
         hasDot: false,
+        result: '',
       });
     }
     // if the value is any of the calculations and there is at least one value on the memory or the current number
-    else if (
-      state.calculations.includes(value) &&
-      (state.currentNumber.length > 0 || state.memory.length > 0)
-    ) {
-      // if the current number is not a calculation already
-      if (!state.calculations.includes(state.currentNumber)) {
-        const newMemory = state.memory;
-        newMemory.push(state.currentNumber);
+    else if (state.calculations.includes(value)) {
+      if (
+        state.currentNumber.length === 0 &&
+        !isNaN(parseFloat(state.result))
+      ) {
         setState({
           ...state,
-          memory: newMemory,
+          memory: [state.result],
           hasDot: false,
           currentNumber: value,
         });
+      } else if (state.currentNumber.length > 0) {
+        console.log(state.currentNumber);
+        // if the current number is not a calculation already
+        if (!state.calculations.includes(state.currentNumber)) {
+          const newMemory = state.memory;
+          newMemory.push(state.currentNumber);
+          setState({
+            ...state,
+            memory: newMemory,
+            hasDot: false,
+            currentNumber: value,
+          });
+        }
+        // if the current number is a calculation already
+        else {
+          setState({ ...state, currentNumber: value });
+        }
       }
-      // if the current number is a calculation already
-      else {
-        setState({ ...state, currentNumber: value });
+    }
+    // if the value is +/-, the current number is a number and there's a current number
+    else if (value === '+/-') {
+      if (!isNaN(state.currentNumber) && state.currentNumber.length > 0) {
+        if (state.currentNumber.split('')[0] === '-') {
+          setState({ ...state, currentNumber: state.currentNumber.slice(1) });
+        } else {
+          setState({
+            ...state,
+            currentNumber: '-'.concat(state.currentNumber),
+          });
+        }
+      } else if (
+        state.currentNumber.length === 0 &&
+        !isNaN(parseFloat(state.result))
+      ) {
+        if (state.result.split('')[0] === '-') {
+          setState({ ...state, currentNumber: state.result.slice(1) });
+        } else {
+          setState({ ...state, currentNumber: '-'.concat(state.result) });
+        }
       }
-    } else if (
-      value === '+/-' &&
-      !isNaN(state.currentNumber) &&
-      state.currentNumber.length > 0
-    ) {
-      if (state.currentNumber.split('')[0] === '-') {
-        setState({ ...state, currentNumber: state.currentNumber.slice(1) });
-      } else {
-        setState({ ...state, currentNumber: '-'.concat(state.currentNumber) });
-      }
-      console.log(parseFloat('12.8'));
     }
     // if the value is =
     else if (value === '=' && state.memory.length > 1) {
       handleEquals();
+    }
+    // if the value is a cat emoji
+    else if (value === '🐱') {
+      randomizeCatButtonColor();
     }
   };
 
@@ -199,14 +239,13 @@ function App() {
       <Grid item xs={symbol === 'RESET' ? 6 : 3} sx={{}} key={symbol}>
         <Button
           variant="contained"
-          color={symbol === '$' ? 'error' : 'primary'}
+          color={symbol === '🐱' ? state.catButtonColor : 'primary'}
           sx={{
             width: '100%',
             height: '100%',
           }}
           onClick={handleClick}
           value={symbol}
-          // disabled={state.resultOnScreen && symbol !== 'RESET'}
         >
           {symbol}
         </Button>
@@ -250,8 +289,8 @@ function App() {
               </Stack>
               <Typography variant="h5">
                 {state.currentNumber.length > 0
-                  ? state.currentNumber.length > 15
-                    ? '...'.concat(state.currentNumber.slice(-16, -1))
+                  ? state.currentNumber.length > 17
+                    ? '...'.concat(state.currentNumber.slice(-18, -1))
                     : state.currentNumber
                   : state.placeholderCurrentNumber}
               </Typography>
