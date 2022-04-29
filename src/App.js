@@ -1,4 +1,4 @@
-import { Button, Grid, Paper, Stack, Typography } from '@mui/material';
+import { Button, Grid, Paper, Stack, Typography, Link } from '@mui/material';
 import React from 'react';
 import './App.css';
 import GeneralContainer from './components/GeneralContainer';
@@ -299,6 +299,30 @@ function App() {
         </Grid>
         {renderButtons()}
       </Grid>
+      <Stack
+        position="fixed"
+        left="0"
+        bottom="0"
+        width="100vw"
+        bgcolor="rgb(25,118,210)"
+        direction="row"
+        justifyContent="center"
+      >
+        <Typography color="white">
+          {' '}
+          built by{' '}
+          <Link
+            href="https://github.com/guitrentini96"
+            underline="hover"
+            target="_blank"
+            rel="noopener"
+            sx={{ color: 'white' }}
+          >
+            Guilherme Trentini
+          </Link>{' '}
+          :)
+        </Typography>
+      </Stack>
     </GeneralContainer>
   );
 }
