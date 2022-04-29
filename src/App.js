@@ -318,7 +318,7 @@ function App() {
             rel="noopener"
             sx={{ color: 'white' }}
           >
-            Guilherme Trentini
+            Guilherme Campara
           </Link>{' '}
           :)
         </Typography>
